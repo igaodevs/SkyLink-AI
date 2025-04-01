@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import routes from "tempo-routes";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("./components/home"));
+const WelcomeScreen = lazy(() => import("./components/WelcomeScreen"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Flights = lazy(() => import("./views/Flights"));
 const DynamicBooking = lazy(() => import("./views/DynamicBooking"));
@@ -19,6 +20,21 @@ function App() {
   // Define Tempo routes first
   const tempoRoutes =
     import.meta.env.VITE_TEMPO === "true" ? useRoutes(routes) : null;
+
+  // State to track if welcome screen has been shown
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+
+  // Check localStorage on mount
+  useEffect(() => {
+    const welcomeSeen = localStorage.getItem("hasSeenWelcome");
+    setHasSeenWelcome(welcomeSeen === "true");
+  }, []);
+
+  // Function to mark welcome screen as seen
+  const markWelcomeAsSeen = () => {
+    localStorage.setItem("hasSeenWelcome", "true");
+    setHasSeenWelcome(true);
+  };
 
   return (
     <ThemeProvider>
@@ -35,7 +51,8 @@ function App() {
             {tempoRoutes}
 
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<WelcomeScreen />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/flights" element={<Flights />} />
               <Route path="/booking" element={<DynamicBooking />} />
